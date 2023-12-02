@@ -61,5 +61,13 @@ docker run -it ^
    --table_name=green_taxi_trips ^
    --url=https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-01.csv.gz 
 
-
+docker build -t taxi-ingest:v002 .  
 docker run -it --network=pg-network taxi-ingest:v002
+
+prefect orion start
+prefect agent start -q default
+
+docker image build -t jadata2023/prefect-taxi-ingest:v001 . 
+docker image push jadata2023/prefect-taxi-ingest:v001
+
+prefect deployment run etl-parent-flow/docker-flow -p "months=[1,2]"
