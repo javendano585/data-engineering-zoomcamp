@@ -13,17 +13,23 @@ def fetch(dataset_url: str) -> pd.DataFrame:
 
 
 @task(log_prints=True)
-def clean(df: pd.DataFrame) -> pd.DataFrame:
+def clean(df: pd.DataFrame, color: str) -> pd.DataFrame:
     """Fix dtype issues"""
     df_clean = (
         df
         .assign(
             passenger_count = lambda _df: _df.passenger_count.astype('Int64'),
-            RatecodeID = lambda _df: _df.RatecodeID.astype('Int64'),
-            tpep_pickup_datetime = lambda _df: pd.to_datetime(_df.tpep_pickup_datetime),
-            tpep_dropoff_datetime = lambda _df: pd.to_datetime(_df.tpep_dropoff_datetime)
+            RatecodeID = lambda _df: _df.RatecodeID.astype('Int64')
             )
     )
+
+    if color == 'yellow':
+        df_clean.tpep_pickup_datetime = pd.to_datetime(df_clean.tpep_pickup_datetime)
+        df_clean.tpep_dropoff_datetime = pd.to_datetime(df_clean.tpep_dropoff_datetime)
+    elif color == 'green':
+        df_clean.lpep_pickup_datetime = pd.to_datetime(df_clean.lpep_pickup_datetime)
+        df_clean.lpep_dropoff_datetime = pd.to_datetime(df_clean.lpep_dropoff_datetime)
+
     print(df_clean.head(2))
     print(f'column: {df_clean.dtypes}')
     print(f'rows: {len(df_clean)}')
@@ -46,7 +52,8 @@ def write_gcs(path: Path) -> None:
     gcs_block = GcsBucket.load('dezoomcamp-gcs')
     gcs_block.upload_from_path(
         from_path=path,
-        to_path=path.as_posix()
+        to_path=path.as_posix(),
+        timeout=120
     )
 
 
@@ -57,7 +64,7 @@ def etl_web_to_gcs(color: str, year: int, month: int) -> None:
     dataset_url = f'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{dataset_file}.csv.gz'
 
     df = fetch(dataset_url)
-    df_clean = clean(df)
+    df_clean = clean(df, color)
     path = write_local(df_clean, color, dataset_file)
 
     write_gcs(path)
@@ -77,5 +84,6 @@ if __name__ == '__main__':
     color = 'yellow'
     year = 2021
     months = [1, 2, 3]
+
     etl_parent_flow(months, year, color)
 
