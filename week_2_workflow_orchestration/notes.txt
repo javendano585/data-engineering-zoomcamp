@@ -71,3 +71,4 @@ docker image build -t jadata2023/prefect-taxi-ingest:v001 .
 docker image push jadata2023/prefect-taxi-ingest:v001
 
 prefect deployment run etl-parent-flow/docker-flow -p "months=[1,2]"
+prefect deployment build flows/03_deploy/parameterized_flow.py:etl_parent_flow -n de-hw-4 -sb github/de-zoom -a
