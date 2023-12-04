@@ -14,7 +14,7 @@ Pre-reqs:
 # services = ['fhv','green','yellow']
 init_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/'
 # switch out the bucketname
-BUCKET = os.environ.get("GCP_GCS_BUCKET", "dtc-data-lake-bucketname")
+BUCKET = os.environ.get("GCP_GCS_BUCKET", "dtc_data_lake_dtc-de-course-2023-406120")
 
 
 def upload_to_gcs(bucket, object_name, local_file):
@@ -49,18 +49,19 @@ def web_to_gcs(year, service):
         print(f"Local: {file_name}")
 
         # read it back into a parquet file
-        df = pd.read_csv(file_name, compression='gzip')
-        file_name = file_name.replace('.csv.gz', '.parquet')
-        df.to_parquet(file_name, engine='pyarrow')
-        print(f"Parquet: {file_name}")
+        # df = pd.read_csv(file_name, compression='gzip')
+        # file_name = file_name.replace('.csv.gz', '.parquet')
+        # df.to_parquet(file_name, engine='pyarrow')
+        # print(f"Parquet: {file_name}")
 
         # upload it to gcs 
         upload_to_gcs(BUCKET, f"{service}/{file_name}", file_name)
         print(f"GCS: {service}/{file_name}")
 
 
-web_to_gcs('2019', 'green')
-web_to_gcs('2020', 'green')
+web_to_gcs('2019', 'fhv')
+# web_to_gcs('2020', 'fhv')
+# web_to_gcs('2021', 'fhv')
 # web_to_gcs('2019', 'yellow')
 # web_to_gcs('2020', 'yellow')
 
