@@ -15,6 +15,16 @@ def fetch(dataset_url: str) -> pd.DataFrame:
 def clean(df: pd.DataFrame, color: str) -> pd.DataFrame:
     """Fix dtype issues"""
     print(f'column: {df.dtypes}')
+    astype_dict = {
+        
+        'VendorID': 'Int64',
+        'passenger_count': 'Int64',
+        'RatecodeID': 'Int64',
+        'payment_type': 'Int64',
+        # 'trip_type': 'Int64'
+    }
+    if color == 'green':
+        astype_dict['trip_type'] = 'Int64'
 
     if color == 'fhv':
         df_clean = (
@@ -28,11 +38,7 @@ def clean(df: pd.DataFrame, color: str) -> pd.DataFrame:
     else:
         df_clean = (
             df
-            .astype(
-                {'passenger_count': 'Int64',
-                'RatecodeID': 'Int64',
-                'Payment_type': 'Int64'}
-            )
+            .astype(astype_dict)
         )
 
     if color == 'yellow':
@@ -74,9 +80,9 @@ def write_gcs(path: Path) -> None:
 @flow()
 def etl_web_to_gcs() -> None:
     """ The main ELT function """
-    color = 'fhv'
+    color = 'yellow'
     year = 2019
-    months = list(range(2, 13))
+    months = list(range(1, 13))
     for month in months:
         dataset_file = f'{color}_tripdata_{year}-{month:02}'
         dataset_url = f'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{dataset_file}.csv.gz'
